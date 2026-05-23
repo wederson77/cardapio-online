@@ -1,6 +1,6 @@
-import { Header } from "@/components/layout/Header";
-import { ProductCard } from "@/components/menu/ProductCard";
-import { CartSidebar } from "@/components/cart/CartSidebar";
+import { Header } from "@/components/layout/header";
+import { ProductCard } from "@/components/menu/productcard";
+import { CartSidebar } from "@/components/cart/cartsidebar";
 import { products } from "@/lib/data";
 
 export default function HomePage() {
