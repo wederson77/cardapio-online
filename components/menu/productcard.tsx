@@ -3,7 +3,7 @@
 import { useCart } from "@/store/cart-store";
 
 type Product = {
-  id: number;
+  id: string;
   name: string;
   price: number;
 };
