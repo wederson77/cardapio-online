@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { Trash2, Plus, Minus, MessageCircle } from "lucide-react";
 import { useCart } from "@/store/cart-store";
 
@@ -11,6 +13,12 @@ export function CartSidebar() {
     decreaseQuantity,
     updateObservation,
   } = useCart();
+
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [deliveryType, setDeliveryType] = useState("delivery");
+
+  const [needsChange, setNeedsChange] = useState(false);
+  const [changeFor, setChangeFor] = useState("");
 
   const subtotal = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -145,6 +153,147 @@ ${items
             </span>
           </div>
         </div>
+
+        {/* ENTREGA */}
+        <div className="mt-8">
+          <h3 className="mb-3 text-[18px] font-black">Tipo de pedido</h3>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setDeliveryType("delivery")}
+              className={`
+        rounded-2xl border px-4 py-3 text-[14px] font-bold transition
+        ${
+          deliveryType === "delivery"
+            ? "border-[#FFD54A] bg-[#7E0D0D]"
+            : "border-white/10 bg-[#870E0E]"
+        }
+      `}
+            >
+              Entrega
+            </button>
+
+            <button
+              onClick={() => setDeliveryType("pickup")}
+              className={`
+        rounded-2xl border px-4 py-3 text-[14px] font-bold transition
+        ${
+          deliveryType === "pickup"
+            ? "border-[#FFD54A] bg-[#7E0D0D]"
+            : "border-white/10 bg-[#870E0E]"
+        }
+      `}
+            >
+              Retirada
+            </button>
+          </div>
+        </div>
+
+        {/* PAGAMENTO */}
+        <div className="mt-8">
+          <h3 className="mb-3 text-[18px] font-black">Forma de pagamento</h3>
+
+          <div className="space-y-3">
+            {["Dinheiro", "Cartão de Débito", "Cartão de Crédito", "PIX"].map(
+              (method) => (
+                <button
+                  key={method}
+                  onClick={() => {
+                    setPaymentMethod(method);
+
+                    if (method === "Cartão de Débito") {
+                      console.log("Pagamento via débito");
+                    }
+
+                    if (method === "Cartão de Crédito") {
+                      console.log("Pagamento via crédito");
+                    }
+
+                    if (method === "PIX") {
+                      console.log("Pagamento via PIX");
+                    }
+                  }}
+                  className={`
+          flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-left transition
+          ${
+            paymentMethod === method
+              ? "border-[#FFD54A] bg-[#7E0D0D]"
+              : "border-white/10 bg-[#870E0E]"
+          }
+        `}
+                >
+                  <span className="text-[14px] font-bold">{method}</span>
+
+                  <div
+                    className={`
+            h-5 w-5 rounded-full border-2
+            ${
+              paymentMethod === method
+                ? "border-[#FFD54A] bg-[#FFD54A]"
+                : "border-white/30"
+            }
+          `}
+                  />
+                </button>
+              ),
+            )}
+          </div>
+        </div>
+
+        {/* TROCO */}
+        {paymentMethod === "Dinheiro" && deliveryType === "delivery" && (
+          <div className="mt-6 rounded-2xl bg-[#870E0E] p-4">
+            <h3 className="text-[16px] font-black">Precisa de troco?</h3>
+
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={() => setNeedsChange(true)}
+                className={`
+            flex-1 rounded-xl py-3 text-[14px] font-bold transition
+            ${needsChange ? "bg-[#FFD54A] text-black" : "bg-[#730909]"}
+          `}
+              >
+                Sim
+              </button>
+
+              <button
+                onClick={() => {
+                  setNeedsChange(false);
+                  setChangeFor("");
+                }}
+                className={`
+            flex-1 rounded-xl py-3 text-[14px] font-bold transition
+            ${!needsChange ? "bg-[#FFD54A] text-black" : "bg-[#730909]"}
+          `}
+              >
+                Não
+              </button>
+            </div>
+
+            {needsChange && (
+              <input
+                type="text"
+                placeholder="Troco para quanto?"
+                value={changeFor}
+                onChange={(e) => setChangeFor(e.target.value)}
+                className="
+            mt-4
+            w-full
+            rounded-2xl
+            border
+            border-white/10
+            bg-[#730909]
+            px-4
+            py-3
+            text-[14px]
+            outline-none
+            placeholder:text-white/40
+            focus:border-[#FFD54A]
+          "
+              />
+            )}
+          </div>
+        )}
 
         {/* BOTÃO */}
         <a
