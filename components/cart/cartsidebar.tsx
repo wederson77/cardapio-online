@@ -1,11 +1,105 @@
 "use client";
 
+/**
+ * ========================================================================
+ * COMPONENTE: CartSidebar
+ * ========================================================================
+ *
+ * RESPONSABILIDADE ATUAL:
+ * - Exibir os itens do carrinho
+ * - Controlar quantidade dos produtos
+ * - Exibir resumo financeiro
+ * - Controlar forma de pagamento
+ * - Controlar tipo de entrega
+ * - Gerar mensagem para WhatsApp
+ *
+ * ------------------------------------------------------------------------
+ * FUTURA REFATORAÇÃO (sem alterar comportamento):
+ * ------------------------------------------------------------------------
+ *
+ * 1. components/cart/
+ *    ├── cart-sidebar.tsx
+ *    ├── cart-header.tsx
+ *    ├── cart-item.tsx
+ *    ├── cart-summary.tsx
+ *    ├── delivery-selector.tsx
+ *    ├── payment-selector.tsx
+ *    ├── change-section.tsx
+ *    └── whatsapp-button.tsx
+ *
+ * Cada parte da interface ficaria responsável apenas por sua própria UI.
+ *
+ * ------------------------------------------------------------------------
+ *
+ * 2. hooks/
+ *    └── use-cart-calculations.ts
+ *
+ * Responsável por:
+ * - subtotal
+ * - total
+ * - deliveryFee
+ * - regras financeiras
+ *
+ * ------------------------------------------------------------------------
+ *
+ * 3. utils/
+ *    ├── currency.ts
+ *    ├── whatsapp.ts
+ *    └── order-message.ts
+ *
+ * Responsável por:
+ * - formatar moeda
+ * - gerar mensagem do WhatsApp
+ * - funções reutilizáveis
+ *
+ * ------------------------------------------------------------------------
+ *
+ * 4. constants/
+ *    └── payment-methods.ts
+ *
+ * Responsável por:
+ * - lista de formas de pagamento
+ *
+ * Exemplo:
+ *
+ * export const PAYMENT_METHODS = [
+ *   "Dinheiro",
+ *   "Cartão de Débito",
+ *   "Cartão de Crédito",
+ *   "PIX",
+ * ];
+ *
+ * ------------------------------------------------------------------------
+ *
+ * 5. store/
+ *    └── cart-store.ts
+ *
+ * Já está corretamente separado.
+ * Responsável apenas pelo estado global do carrinho.
+ *
+ * ========================================================================
+ */
+
 import { useState } from "react";
 
 import { Trash2, Plus, Minus, MessageCircle } from "lucide-react";
 import { useCart } from "@/store/cart-store";
 
 export function CartSidebar() {
+  /**
+   * ======================================================================
+   * STORE GLOBAL
+   * ======================================================================
+   *
+   * Atualmente este componente acessa diretamente o estado global.
+   *
+   * FUTURAMENTE:
+   * Poderia existir um hook intermediário:
+   *
+   * useCartController()
+   *
+   * Que encapsularia toda regra de negócio do carrinho.
+   */
   const {
     items,
     removeItem,
@@ -14,12 +108,37 @@ export function CartSidebar() {
     updateObservation,
   } = useCart();
 
+  /**
+   * ======================================================================
+   * ESTADOS LOCAIS
+   * ======================================================================
+   *
+   * FUTURAMENTE:
+   * Estes estados podem ser movidos para:
+   *
+   * - hooks/use-checkout.ts
+   * - context/checkout-context.tsx
+   *
+   * Principalmente se a tela crescer.
+   */
   const [paymentMethod, setPaymentMethod] = useState("");
   const [deliveryType, setDeliveryType] = useState("delivery");
 
   const [needsChange, setNeedsChange] = useState(false);
   const [changeFor, setChangeFor] = useState("");
 
+  /**
+   * ======================================================================
+   * CÁLCULOS FINANCEIROS
+   * ======================================================================
+   *
+   * FUTURAMENTE:
+   * Mover para:
+   *
+   * hooks/use-cart-calculations.ts
+   *
+   * Isso evita repetir regras financeiras em vários lugares.
+   */
   const subtotal = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0,
@@ -29,6 +148,26 @@ export function CartSidebar() {
 
   const total = subtotal + deliveryFee;
 
+  /**
+   * ======================================================================
+   * MENSAGEM WHATSAPP
+   * ======================================================================
+   *
+   * FUTURAMENTE:
+   * Mover para:
+   *
+   * utils/order-message.ts
+   *
+   * Exemplo:
+   *
+   * const whatsappMessage = buildOrderMessage({
+   *   items,
+   *   total,
+   *   deliveryFee,
+   * });
+   *
+   * Isso deixa o componente mais limpo.
+   */
   const whatsappMessage = encodeURIComponent(`
 🛒 *NOVO PEDIDO*
 
@@ -47,12 +186,24 @@ ${items
 
   return (
     <aside className="sticky top-4 overflow-hidden rounded-[28px] bg-[#9E1111] text-white shadow-xl">
+      {/* ================================================================= */}
       {/* HEADER */}
+      {/* ================================================================= */}
+      {/*
+        FUTURAMENTE:
+        <CartHeader />
+      */}
       <div className="border-b border-white/10 p-5">
         <h2 className="text-[30px] font-black tracking-[0.5px]">Seu pedido</h2>
       </div>
 
-      {/* LISTA */}
+      {/* ================================================================= */}
+      {/* LISTA DE ITENS */}
+      {/* ================================================================= */}
+      {/*
+        FUTURAMENTE:
+        <CartItemsList />
+      */}
       <div className="max-h-[420px] overflow-y-auto px-5 py-4">
         {items.length === 0 ? (
           <div className="py-12 text-center text-white/70">
@@ -61,6 +212,10 @@ ${items
         ) : (
           <div className="space-y-5">
             {items.map((item) => (
+              /**
+               * FUTURAMENTE:
+               * <CartItem />
+               */
               <div key={item.id} className="rounded-2xl bg-[#870E0E] p-4">
                 {/* TOPO */}
                 <div className="flex items-start justify-between gap-3">
@@ -132,7 +287,13 @@ ${items
         )}
       </div>
 
+      {/* ================================================================= */}
       {/* RESUMO */}
+      {/* ================================================================= */}
+      {/*
+        FUTURAMENTE:
+        <CartSummary />
+      */}
       <div className="border-t border-white/10 px-5 py-5">
         <div className="space-y-3 text-[15px]">
           <div className="flex items-center justify-between text-white/80">
@@ -154,7 +315,13 @@ ${items
           </div>
         </div>
 
+        {/* =============================================================== */}
         {/* ENTREGA */}
+        {/* =============================================================== */}
+        {/*
+          FUTURAMENTE:
+          <DeliverySelector />
+        */}
         <div className="mt-8">
           <h3 className="mb-3 text-[18px] font-black">Tipo de pedido</h3>
 
@@ -162,13 +329,13 @@ ${items
             <button
               onClick={() => setDeliveryType("delivery")}
               className={`
-        rounded-2xl border px-4 py-3 text-[14px] font-bold transition
-        ${
-          deliveryType === "delivery"
-            ? "border-[#FFD54A] bg-[#7E0D0D]"
-            : "border-white/10 bg-[#870E0E]"
-        }
-      `}
+                rounded-2xl border px-4 py-3 text-[14px] font-bold transition
+                ${
+                  deliveryType === "delivery"
+                    ? "border-[#FFD54A] bg-[#7E0D0D]"
+                    : "border-white/10 bg-[#870E0E]"
+                }
+              `}
             >
               Entrega
             </button>
@@ -176,20 +343,26 @@ ${items
             <button
               onClick={() => setDeliveryType("pickup")}
               className={`
-        rounded-2xl border px-4 py-3 text-[14px] font-bold transition
-        ${
-          deliveryType === "pickup"
-            ? "border-[#FFD54A] bg-[#7E0D0D]"
-            : "border-white/10 bg-[#870E0E]"
-        }
-      `}
+                rounded-2xl border px-4 py-3 text-[14px] font-bold transition
+                ${
+                  deliveryType === "pickup"
+                    ? "border-[#FFD54A] bg-[#7E0D0D]"
+                    : "border-white/10 bg-[#870E0E]"
+                }
+              `}
             >
               Retirada
             </button>
           </div>
         </div>
 
+        {/* =============================================================== */}
         {/* PAGAMENTO */}
+        {/* =============================================================== */}
+        {/*
+          FUTURAMENTE:
+          <PaymentSelector />
+        */}
         <div className="mt-8">
           <h3 className="mb-3 text-[18px] font-black">Forma de pagamento</h3>
 
@@ -200,6 +373,11 @@ ${items
                   key={method}
                   onClick={() => {
                     setPaymentMethod(method);
+
+                    if (method !== "Dinheiro") {
+                      setNeedsChange(false);
+                      setChangeFor("");
+                    }
 
                     if (method === "Cartão de Débito") {
                       console.log("Pagamento via débito");
@@ -214,25 +392,25 @@ ${items
                     }
                   }}
                   className={`
-          flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-left transition
-          ${
-            paymentMethod === method
-              ? "border-[#FFD54A] bg-[#7E0D0D]"
-              : "border-white/10 bg-[#870E0E]"
-          }
-        `}
+                    flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-left transition
+                    ${
+                      paymentMethod === method
+                        ? "border-[#FFD54A] bg-[#7E0D0D]"
+                        : "border-white/10 bg-[#870E0E]"
+                    }
+                  `}
                 >
                   <span className="text-[14px] font-bold">{method}</span>
 
                   <div
                     className={`
-            h-5 w-5 rounded-full border-2
-            ${
-              paymentMethod === method
-                ? "border-[#FFD54A] bg-[#FFD54A]"
-                : "border-white/30"
-            }
-          `}
+                      h-5 w-5 rounded-full border-2
+                      ${
+                        paymentMethod === method
+                          ? "border-[#FFD54A] bg-[#FFD54A]"
+                          : "border-white/30"
+                      }
+                    `}
                   />
                 </button>
               ),
@@ -240,33 +418,26 @@ ${items
           </div>
         </div>
 
+        {/* =============================================================== */}
         {/* TROCO */}
+        {/* =============================================================== */}
+        {/*
+          FUTURAMENTE:
+          <ChangeSection />
+        */}
         {paymentMethod === "Dinheiro" && deliveryType === "delivery" && (
           <div className="mt-6 rounded-2xl bg-[#870E0E] p-4">
             <h3 className="text-[16px] font-black">Precisa de troco?</h3>
 
-            <div className="mt-4 flex gap-3">
+            <div className="mt-4">
               <button
                 onClick={() => setNeedsChange(true)}
                 className={`
-            flex-1 rounded-xl py-3 text-[14px] font-bold transition
-            ${needsChange ? "bg-[#FFD54A] text-black" : "bg-[#730909]"}
-          `}
+                    w-full rounded-xl py-3 text-[14px] font-bold transition
+                    ${needsChange ? "bg-[#FFD54A] text-black" : "bg-[#730909]"}
+                  `}
               >
                 Sim
-              </button>
-
-              <button
-                onClick={() => {
-                  setNeedsChange(false);
-                  setChangeFor("");
-                }}
-                className={`
-            flex-1 rounded-xl py-3 text-[14px] font-bold transition
-            ${!needsChange ? "bg-[#FFD54A] text-black" : "bg-[#730909]"}
-          `}
-              >
-                Não
               </button>
             </div>
 
@@ -277,25 +448,31 @@ ${items
                 value={changeFor}
                 onChange={(e) => setChangeFor(e.target.value)}
                 className="
-            mt-4
-            w-full
-            rounded-2xl
-            border
-            border-white/10
-            bg-[#730909]
-            px-4
-            py-3
-            text-[14px]
-            outline-none
-            placeholder:text-white/40
-            focus:border-[#FFD54A]
-          "
+                    mt-4
+                    w-full
+                    rounded-2xl
+                    border
+                    border-white/10
+                    bg-[#730909]
+                    px-4
+                    py-3
+                    text-[14px]
+                    outline-none
+                    placeholder:text-white/40
+                    focus:border-[#FFD54A]
+                  "
               />
             )}
           </div>
         )}
 
-        {/* BOTÃO */}
+        {/* =============================================================== */}
+        {/* BOTÃO WHATSAPP */}
+        {/* =============================================================== */}
+        {/*
+          FUTURAMENTE:
+          <WhatsappButton />
+        */}
         <a
           href={`https://wa.me/5500000000000?text=${whatsappMessage}`}
           target="_blank"
